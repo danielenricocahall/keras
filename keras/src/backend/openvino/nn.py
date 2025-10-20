@@ -367,6 +367,7 @@ def conv_transpose(
     output_padding=None,
     data_format=None,
     dilation_rate=1,
+    groups=1,
 ):
     raise NotImplementedError(
         "`conv_transpose` is not supported with openvino backend"

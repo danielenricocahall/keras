@@ -500,6 +500,7 @@ def conv_transpose(
     output_padding=None,
     data_format=None,
     dilation_rate=1,
+    groups=1,
 ):
     data_format = backend.standardize_data_format(data_format)
     num_spatial_dims = inputs.ndim - 2
@@ -529,6 +530,10 @@ def conv_transpose(
         include_batch_and_channels=False,
     )
 
+    if groups > 1:
+        raise ValueError(
+            "`groups > 1` is not supported for conv_transpose in numpy backend."
+        )
     return np.array(
         jax.lax.conv_transpose(
             inputs,

@@ -52,6 +52,11 @@ class Conv3DTranspose(BaseConvTranspose):
             all spatial dimensions.
             Currently, specifying any `dilation_rate` value != 1 is
             incompatible with specifying any stride value != 1.
+        groups: A positive int specifying the number of groups in which the
+            input is split along the channel axis. Each group is convolved
+            separately with `filters // groups` filters. The output is the
+            concatenation of all the `groups` results along the channel axis.
+            Input channels and `filters` must both be divisible by `groups`.
         activation: Activation function. If `None`, no activation is applied.
         use_bias: bool, if `True`, bias will be added to the output.
         kernel_initializer: Initializer for the convolution kernel. If `None`,
@@ -119,6 +124,7 @@ class Conv3DTranspose(BaseConvTranspose):
         data_format=None,
         output_padding=None,
         dilation_rate=(1, 1, 1),
+        groups=1,
         activation=None,
         use_bias=True,
         kernel_initializer="glorot_uniform",
@@ -139,6 +145,7 @@ class Conv3DTranspose(BaseConvTranspose):
             output_padding=output_padding,
             data_format=data_format,
             dilation_rate=dilation_rate,
+            groups=groups,
             activation=activation,
             use_bias=use_bias,
             kernel_initializer=kernel_initializer,

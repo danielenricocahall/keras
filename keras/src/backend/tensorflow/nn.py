@@ -473,6 +473,7 @@ def conv_transpose(
     output_padding=None,
     data_format=None,
     dilation_rate=1,
+    groups=1,
 ):
     data_format = backend.standardize_data_format(data_format)
     tf_data_format = _convert_data_format(data_format, len(inputs.shape))
@@ -502,6 +503,7 @@ def conv_transpose(
         padding=padding.upper(),
         data_format=tf_data_format,
         dilations=dilation_rate,
+        groups=groups,
     )
 
 

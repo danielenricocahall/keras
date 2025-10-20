@@ -49,6 +49,11 @@ class BaseConvTranspose(Layer):
         dilation_rate: int or tuple/list of `rank` integers, specifying the
             dilation rate to use for dilated convolution. If only one int is
             specified, the same dilation rate will be used for all dimensions.
+        groups: A positive int specifying the number of groups in which the
+            input is split along the channel axis. Each group is convolved
+            separately with `filters // groups` filters. The output is the
+            concatenation of all the `groups` results along the channel axis.
+            Input channels and `filters` must both be divisible by `groups`.
         activation: Activation function. If `None`, no activation is applied.
         use_bias: bool, if `True`, bias will be added to the output.
         kernel_initializer: Initializer for the convolution kernel. If `None`,
@@ -78,6 +83,7 @@ class BaseConvTranspose(Layer):
         output_padding=None,
         data_format=None,
         dilation_rate=1,
+        groups=1,
         activation=None,
         use_bias=True,
         kernel_initializer="glorot_uniform",
@@ -104,6 +110,7 @@ class BaseConvTranspose(Layer):
         self.dilation_rate = standardize_tuple(
             dilation_rate, rank, "dilation_rate"
         )
+        self.groups = groups
         self.padding = standardize_padding(padding)
         if output_padding is None:
             self.output_padding = None
@@ -197,6 +204,7 @@ class BaseConvTranspose(Layer):
             output_padding=self.output_padding,
             dilation_rate=self.dilation_rate,
             data_format=self.data_format,
+            groups=self.groups,
         )
 
         if self.use_bias:
@@ -233,6 +241,7 @@ class BaseConvTranspose(Layer):
                 "padding": self.padding,
                 "data_format": self.data_format,
                 "dilation_rate": self.dilation_rate,
+                "groups": self.groups,
                 "activation": activations.serialize(self.activation),
                 "use_bias": self.use_bias,
                 "kernel_initializer": initializers.serialize(

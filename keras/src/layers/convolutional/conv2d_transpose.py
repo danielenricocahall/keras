@@ -53,6 +53,11 @@ class Conv2DTranspose(BaseConvTranspose):
             for different dimensions is not supported.
             Currently, specifying any `dilation_rate` value != 1 is
             incompatible with specifying any stride value != 1.
+        groups: A positive int specifying the number of groups in which the
+            input is split along the channel axis. Each group is convolved
+            separately with `filters // groups` filters. The output is the
+            concatenation of all the `groups` results along the channel axis.
+            Input channels and `filters` must both be divisible by `groups`.
         activation: Activation function. If `None`, no activation is applied.
         use_bias: bool, if `True`, bias will be added to the output.
         kernel_initializer: Initializer for the convolution kernel. If `None`,

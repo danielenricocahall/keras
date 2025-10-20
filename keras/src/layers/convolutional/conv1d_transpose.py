@@ -45,6 +45,11 @@ class Conv1DTranspose(BaseConvTranspose):
             Currently, specifying a `dilation_rate` value != 1 is
             incompatible with specifying a stride value != 1.
             Also dilation rate larger than 1 is not currently supported.
+        groups: A positive int specifying the number of groups in which the
+            input is split along the channel axis. Each group is convolved
+            separately with `filters // groups` filters. The output is the
+            concatenation of all the `groups` results along the channel axis.
+            Input channels and `filters` must both be divisible by `groups`.
         activation: Activation function. If `None`, no activation is applied.
         use_bias: bool, if `True`, bias will be added to the output.
         kernel_initializer: Initializer for the convolution kernel. If `None`,
@@ -107,6 +112,7 @@ class Conv1DTranspose(BaseConvTranspose):
         output_padding=None,
         data_format=None,
         dilation_rate=1,
+        groups=1,
         activation=None,
         use_bias=True,
         kernel_initializer="glorot_uniform",
