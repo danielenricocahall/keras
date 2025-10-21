@@ -138,6 +138,11 @@ class BaseConvTranspose(Layer):
                 "Invalid value for argument `filters`. Expected a strictly "
                 f"positive value. Received filters={self.filters}."
             )
+        if self.groups <= 0:
+            raise ValueError(
+                "The number of groups must be a positive integer. "
+                f"Received: groups={self.groups}."
+            )
 
         if not all(self.kernel_size):
             raise ValueError(
@@ -168,9 +173,16 @@ class BaseConvTranspose(Layer):
         self.input_spec = InputSpec(
             min_ndim=self.rank + 2, axes={channel_axis: input_channel}
         )
+        if input_channel % self.groups != 0:
+            raise ValueError(
+                "The number of input channels must be evenly divisible by "
+                f"the number of groups. Received groups={self.groups}, but the "
+                f"input has {input_channel} channels (full input shape is "
+                f"{input_shape})."
+            )
         kernel_shape = self.kernel_size + (
+            input_channel // self.groups,
             self.filters,
-            input_channel,
         )
 
         self.kernel = self.add_weight(
@@ -204,7 +216,6 @@ class BaseConvTranspose(Layer):
             output_padding=self.output_padding,
             dilation_rate=self.dilation_rate,
             data_format=self.data_format,
-            groups=self.groups,
         )
 
         if self.use_bias:
