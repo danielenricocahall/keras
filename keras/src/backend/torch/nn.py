@@ -591,7 +591,6 @@ def conv_transpose(
     output_padding=None,
     data_format=None,
     dilation_rate=1,
-    groups=1,
 ):
     inputs = convert_to_tensor(inputs)
     kernel = convert_to_tensor(kernel)
@@ -635,7 +634,6 @@ def conv_transpose(
             padding=torch_padding,
             output_padding=torch_output_padding,
             dilation=dilation_rate,
-            groups=groups,
         )
     elif num_spatial_dims == 3:
         outputs = tnn.conv_transpose3d(
@@ -645,7 +643,6 @@ def conv_transpose(
             padding=torch_padding,
             output_padding=torch_output_padding,
             dilation=dilation_rate,
-            groups=groups,
         )
     else:
         raise ValueError(
