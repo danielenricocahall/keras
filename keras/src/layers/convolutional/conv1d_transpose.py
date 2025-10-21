@@ -133,6 +133,7 @@ class Conv1DTranspose(BaseConvTranspose):
             output_padding=output_padding,
             data_format=data_format,
             dilation_rate=dilation_rate,
+            groups=groups,
             activation=activation,
             use_bias=use_bias,
             kernel_initializer=kernel_initializer,
