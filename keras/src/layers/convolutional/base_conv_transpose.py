@@ -181,8 +181,8 @@ class BaseConvTranspose(Layer):
                 f"{input_shape})."
             )
         kernel_shape = self.kernel_size + (
-            input_channel // self.groups,
             self.filters,
+            input_channel // self.groups,
         )
 
         self.kernel = self.add_weight(
