@@ -143,6 +143,12 @@ class BaseConvTranspose(Layer):
                 "The number of groups must be a positive integer. "
                 f"Received: groups={self.groups}."
             )
+        if self.filters is not None and self.filters % self.groups != 0:
+            raise ValueError(
+                "The number of filters must be evenly divisible by the "
+                f"number of groups. Received: groups={self.groups}, "
+                f"filters={self.filters}."
+            )
 
         if not all(self.kernel_size):
             raise ValueError(
@@ -208,27 +214,63 @@ class BaseConvTranspose(Layer):
             self.bias = None
 
     def call(self, inputs):
-        outputs = ops.conv_transpose(
-            inputs,
-            self.kernel,
-            strides=list(self.strides),
-            padding=self.padding,
-            output_padding=self.output_padding,
-            dilation_rate=self.dilation_rate,
-            data_format=self.data_format,
-        )
+        if self.groups == 1:
+            outputs = ops.conv_transpose(
+                inputs,
+                self.kernel,
+                strides=list(self.strides),
+                padding=self.padding,
+                output_padding=self.output_padding,
+                dilation_rate=self.dilation_rate,
+                data_format=self.data_format,
+            )
+        else:
+            channel_axis = -1 if self.data_format == "channels_last" else 1
+            in_ch = inputs.shape[channel_axis]
+            in_per_group = in_ch // self.groups
+            out_per_group = self.filters // self.groups
+
+            # slice & run per group
+            ys = []
+            for g in range(self.groups):
+                in_start = g * in_per_group
+                in_end = (g + 1) * in_per_group
+                out_start = g * out_per_group
+                out_end = (g + 1) * out_per_group
+
+                # slice inputs
+                if self.data_format == "channels_last":
+                    xg = inputs[..., in_start:in_end]
+                else:
+                    # inputs shape: (N, C, H, W) for rank=2
+                    xg = inputs[:, in_start:in_end, ...]
+
+                # slice kernel: (..., filters, in_per_group)
+                kg = self.kernel[..., out_start:out_end, :]
+
+                yg = ops.conv_transpose(
+                    xg,
+                    kg,
+                    strides=list(self.strides),
+                    padding=self.padding,
+                    output_padding=self.output_padding,
+                    dilation_rate=self.dilation_rate,
+                    data_format=self.data_format,
+                )
+                ys.append(yg)
+
+            outputs = ops.concatenate(ys, axis=channel_axis)
 
         if self.use_bias:
             if self.data_format == "channels_last":
                 bias_shape = (1,) * (self.rank + 1) + (self.filters,)
             else:
                 bias_shape = (1, self.filters) + (1,) * self.rank
-            bias = ops.reshape(self.bias, bias_shape)
-            outputs = ops.add(outputs, bias)
+            outputs = ops.add(outputs, ops.reshape(self.bias, bias_shape))
 
-        if self.activation is not None:
-            return self.activation(outputs)
-        return outputs
+        return (
+            self.activation(outputs) if self.activation is not None else outputs
+        )
 
     def compute_output_shape(self, input_shape):
         return compute_conv_transpose_output_shape(
@@ -250,6 +292,7 @@ class BaseConvTranspose(Layer):
                 "kernel_size": self.kernel_size,
                 "strides": self.strides,
                 "padding": self.padding,
+                "output_padding": self.output_padding,
                 "data_format": self.data_format,
                 "dilation_rate": self.dilation_rate,
                 "groups": self.groups,

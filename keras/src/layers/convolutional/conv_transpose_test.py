@@ -363,6 +363,7 @@ class ConvTransposeBasicTest(testing.TestCase):
             "output_padding": None,
             "data_format": "channels_last",
             "dilation_rate": 1,
+            "groups": 1,
             "input_shape": (2, 8, 8, 4),
             "output_shape": (2, 16, 16, 5),
         },
@@ -374,6 +375,7 @@ class ConvTransposeBasicTest(testing.TestCase):
             "output_padding": 2,
             "data_format": "channels_last",
             "dilation_rate": (1, 1),
+            "groups": 1,
             "input_shape": (2, 8, 8, 4),
             "output_shape": (2, 23, 23, 6),
         },
@@ -385,6 +387,7 @@ class ConvTransposeBasicTest(testing.TestCase):
             "output_padding": None,
             "data_format": "channels_first",
             "dilation_rate": (1, 1),
+            "groups": 1,
             "input_shape": (2, 4, 8, 8),
             "output_shape": (2, 6, 16, 10),
         },
@@ -396,6 +399,19 @@ class ConvTransposeBasicTest(testing.TestCase):
             "output_padding": None,
             "data_format": "channels_last",
             "dilation_rate": (1, 1),
+            "groups": 1,
+            "input_shape": (1, 14, 14, 2),
+            "output_shape": (1, 224, 224, 2),
+        },
+        {
+            "filters": 2,
+            "kernel_size": (7, 7),
+            "strides": (16, 16),
+            "padding": "valid",
+            "output_padding": None,
+            "data_format": "channels_last",
+            "dilation_rate": (1, 1),
+            "groups": 2,
             "input_shape": (1, 14, 14, 2),
             "output_shape": (1, 224, 224, 2),
         },
@@ -410,6 +426,7 @@ class ConvTransposeBasicTest(testing.TestCase):
         output_padding,
         data_format,
         dilation_rate,
+        groups,
         input_shape,
         output_shape,
     ):
@@ -429,6 +446,7 @@ class ConvTransposeBasicTest(testing.TestCase):
                 "output_padding": output_padding,
                 "data_format": data_format,
                 "dilation_rate": dilation_rate,
+                "groups": groups,
             },
             input_shape=input_shape,
             expected_output_shape=output_shape,
@@ -544,6 +562,21 @@ class ConvTransposeBasicTest(testing.TestCase):
             layers.Conv2DTranspose(
                 filters=2, kernel_size=(2, 2), strides=2, dilation_rate=(2, 1)
             )
+
+        with self.assertRaisesRegex(
+            ValueError,
+            r"The number of filters must be evenly "
+            r"divisible by the number of groups. "
+            r"Received: groups=3, filters=5.",
+        ):
+            layers.Conv2DTranspose(filters=5, kernel_size=(3, 3), groups=3)
+
+        with self.assertRaisesRegex(
+            ValueError,
+            r"The number of groups must be a positive integer. "
+            r"Received: groups=0.",
+        ):
+            layers.Conv2DTranspose(filters=4, kernel_size=(3, 3), groups=0)
 
 
 class ConvTransposeCorrectnessTest(testing.TestCase):
