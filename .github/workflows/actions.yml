@@ -57,7 +57,7 @@ jobs:
         run: |
           pip install -r requirements.txt --progress-bar off --upgrade
           if [ "${{ matrix.nnx_enabled }}" == "true" ]; then
-            pip install --upgrade flax>=0.11.1
+            pip install --upgrade "flax>=0.11.1,<0.12.0"
           fi
           pip install --no-deps tf_keras==2.18.0
           pip uninstall -y keras keras-nightly
